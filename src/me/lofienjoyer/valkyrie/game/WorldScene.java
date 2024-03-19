@@ -18,6 +18,7 @@ import me.lofienjoyer.valkyrie.engine.world.Player;
 import me.lofienjoyer.valkyrie.engine.world.World;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +56,11 @@ public class WorldScene implements IScene {
         FontRenderer.init();
         this.worldFbo = new ColorNormalFramebuffer(640, 360);
         this.quadMesh = new QuadMesh();
-        this.shader = ResourceLoader.loadShader("FBO Shader", "res/shaders/postprocessing/world_vert.glsl", "res/shaders/postprocessing/world_frag.glsl");
+        this.shader = ResourceLoader.loadShader(
+                "FBO Shader",
+                new ResourceIdentifier("shaders/postprocessing/world_vert.glsl"),
+                new ResourceIdentifier("shaders/postprocessing/world_frag.glsl")
+        );
 
         this.font = new ValkyrieFont("res/fonts/Silkscreen-Regular.ttf", 16);
 

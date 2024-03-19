@@ -8,11 +8,11 @@ import me.lofienjoyer.valkyrie.engine.graphics.texture.TextureArray;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL41;
 import org.lwjgl.system.MemoryStack;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
+import uk.minersonline.Minecart.resource.ResourceLoadingException;
+import uk.minersonline.Minecart.resource.ResourceManager;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -121,7 +121,7 @@ public class Loader {
         return vaoId;
     }
 
-    public int loadTexture(String fileName) {
+    public int loadTexture(ResourceIdentifier fileName) {
         Texture texture = null;
         try {
             texture = new Texture(fileName);
@@ -134,7 +134,7 @@ public class Loader {
         return textureId;
     }
 
-    public int loadTileset(String... fileName) {
+    public int loadTileset(List<ResourceIdentifier> fileName) {
         int textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -148,13 +148,14 @@ public class Loader {
             var tileSize = 32 * (level + 1);
             var image = new BufferedImage(textureSize, textureSize, BufferedImage.TYPE_INT_ARGB);
             var graphics = image.createGraphics();
-            for (int i = 0; i < fileName.length; i++) {
+            for (int i = 0; i < fileName.size(); i++) {
                 var x = i % (textureSize / tileSize);
                 var y = i / (textureSize / tileSize);
                 BufferedImage texture = null;
                 try {
-                    texture = ImageIO.read(new File("res/textures/blocks/" + fileName[i] + ".png"));
-                } catch (IOException e) {
+                    ResourceIdentifier identifier = new ResourceIdentifier(fileName.get(i).getNamespace(), "textures/blocks/" + fileName.get(i).getPath() + ".png");
+                    texture = ResourceManager.loadBufferedImage(identifier);
+                     } catch (ResourceLoadingException e) {
                     throw new RuntimeException(e);
                 }
                 graphics.drawImage(texture, x * tileSize, y * tileSize, tileSize, tileSize, null);
@@ -246,8 +247,14 @@ public class Loader {
                 IntBuffer h = stack.mallocInt(1);
                 IntBuffer channels = stack.mallocInt(1);
 
-                // TODO: 9/1/24 Change this to not be a hardcoded path
-                buf = stbi_load("res/textures/skybox/" + textureFiles[i] + ".png", w, h, channels, 4);
+				ByteBuffer file = null;
+				try {
+                    // TODO: 9/1/24 Change this to not be a hardcoded path
+					file = ResourceManager.fileToBuffer(new ResourceIdentifier("textures/skybox/" + textureFiles[i] + ".png"));
+				} catch (ResourceLoadingException e) {
+					throw new RuntimeException(e);
+				}
+				buf = stbi_load_from_memory(file, w, h, channels, 4);
                 if (buf == null) {
                     Valkyrie.LOG.severe("Image file [" + textureFiles[i]  + "] not loaded: " + stbi_failure_reason());
                     return -1;
@@ -268,28 +275,13 @@ public class Loader {
         return textureId;
     }
 
-    public ImageData loadImageData(String imagePath) {
-        ByteBuffer buf;
-        int width;
-        int height;
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
-
-            buf = stbi_load(imagePath, w, h, channels, 4);
-            if (buf == null) {
-                Valkyrie.LOG.severe("Image not loaded: " + stbi_failure_reason());
-                return null;
-            }
-
-            width = w.get();
-            height = h.get();
-        }
-
-        return new ImageData(width, height, buf);
-    }
+    public ImageData loadImageData(ResourceIdentifier imagePath) {
+		try {
+			return ResourceManager.loadImage(imagePath);
+		} catch (ResourceLoadingException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
     private void storeDataInAttributeList(int attributeNumber, int size, float[] data) {
         int vboId = GL30.glGenBuffers();

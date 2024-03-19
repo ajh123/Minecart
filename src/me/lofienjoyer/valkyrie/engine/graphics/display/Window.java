@@ -1,11 +1,10 @@
 package me.lofienjoyer.valkyrie.engine.graphics.display;
 
 import me.lofienjoyer.valkyrie.Valkyrie;
-import me.lofienjoyer.valkyrie.engine.graphics.render.WorldRenderer;
-import me.lofienjoyer.valkyrie.engine.world.World;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import java.awt.*;
 import java.nio.*;
@@ -14,7 +13,6 @@ import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 import static org.lwjgl.stb.STBImage.stbi_load;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -36,10 +34,23 @@ public class Window {
     private final List<GLFWMouseButtonCallbackI> buttonCallbacks;
     private final List<GLFWCursorPosCallbackI> cursorPosCallbacks;
 
-    private Window() {
+    private final WindowProperties properties;
+
+    public static class WindowProperties {
+        public String name;
+        public ResourceIdentifier logoPath;
+
+        public WindowProperties(String name, ResourceIdentifier logoPath) {
+            this.name = name;
+            this.logoPath = logoPath;
+        }
+    }
+
+    private Window(WindowProperties properties) {
+        this.properties = properties;
         this.width = 800;
         this.height = 600;
-        String title = "Valkyrie";
+        String title = properties.name;
 
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -117,7 +128,7 @@ public class Window {
     }
 
     private void loadIcon() {
-        var imageData = Valkyrie.LOADER.loadImageData("res/textures/icon/icon256.png");
+        var imageData = Valkyrie.LOADER.loadImageData(properties.logoPath);
 
         var iconImage = GLFWImage.malloc();
         var iconBuffer = GLFWImage.malloc(1);
@@ -203,9 +214,9 @@ public class Window {
         return id;
     }
 
-    public static Window getInstance() {
+    public static Window getInstance(WindowProperties properties) {
         if (instance == null)
-            instance = new Window();
+            instance = new Window(properties);
 
         return instance;
     }

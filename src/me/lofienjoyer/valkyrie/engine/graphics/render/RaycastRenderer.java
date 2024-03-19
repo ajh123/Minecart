@@ -10,6 +10,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import java.nio.IntBuffer;
 
@@ -76,7 +77,11 @@ public class RaycastRenderer {
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
         mesh = new Mesh(positions, indices);
-        shader = ResourceLoader.loadShader("Raycast Shader", "res/shaders/world/raycast_vert.glsl", "res/shaders/world/raycast_frag.glsl");
+        shader = ResourceLoader.loadShader(
+                "Raycast Shader",
+                new ResourceIdentifier("shaders/world/raycast_vert.glsl"),
+                new ResourceIdentifier("shaders/world/raycast_frag.glsl")
+        );
 
         loaded = true;
     }

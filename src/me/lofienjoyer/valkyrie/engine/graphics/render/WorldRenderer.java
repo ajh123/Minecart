@@ -20,6 +20,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,8 +53,16 @@ public class WorldRenderer {
         this.world = world;
 
         this.projectionMatrix = new Matrix4f();
-        this.solidsShader = ResourceLoader.loadShader("Solid Mesh Shader", "res/shaders/world/solid_vert.glsl", "res/shaders/world/solid_frag.glsl");
-        this.transparencyShader = ResourceLoader.loadShader("Transparent Mesh Shader", "res/shaders/world/transparent_vert.glsl", "res/shaders/world/transparent_frag.glsl");
+        this.solidsShader = ResourceLoader.loadShader(
+                "Solid Mesh Shader",
+                new ResourceIdentifier("shaders/world/solid_vert.glsl"),
+                new ResourceIdentifier("shaders/world/solid_frag.glsl")
+        );
+        this.transparencyShader = ResourceLoader.loadShader(
+                "Transparent Mesh Shader",
+                new ResourceIdentifier("shaders/world/transparent_vert.glsl"),
+                new ResourceIdentifier("shaders/world/transparent_frag.glsl")
+        );
 
         this.tester = new FrustumCullingTester();
 

@@ -7,6 +7,7 @@ import me.lofienjoyer.valkyrie.engine.resources.ResourceLoader;
 import me.lofienjoyer.valkyrie.engine.utils.Maths;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,11 @@ public class FontRenderer {
             return;
         batchMesh = new BatchMesh(BATCH_SIZE);
 
-        shader = ResourceLoader.loadShader("fontShader", "res/shaders/font/font_vertex.glsl", "res/shaders/font/font_fragment.glsl");
+        shader = ResourceLoader.loadShader(
+                "fontShader",
+                new ResourceIdentifier("shaders/font/font_vertex.glsl"),
+                 new ResourceIdentifier("shaders/font/font_fragment.glsl")
+        );
 
         loaded = true;
     }

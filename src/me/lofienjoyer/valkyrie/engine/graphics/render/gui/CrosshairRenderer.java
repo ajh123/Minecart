@@ -8,6 +8,7 @@ import me.lofienjoyer.valkyrie.engine.resources.ResourceLoader;
 import me.lofienjoyer.valkyrie.engine.utils.Maths;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import static org.lwjgl.opengl.GL46.*;
 
@@ -27,9 +28,13 @@ public class CrosshairRenderer {
         if (loaded)
             return;
 
-        texture = Valkyrie.LOADER.loadTexture("res/textures/gui/crosshair.png");
+        texture = Valkyrie.LOADER.loadTexture(new ResourceIdentifier("textures/gui/crosshair.png"));
         mesh = new QuadMesh();
-        shader = ResourceLoader.loadShader("crosshair-shader", "res/shaders/crosshair_vertex.glsl", "res/shaders/crosshair_fragment.glsl");
+        shader = ResourceLoader.loadShader(
+                "crosshair-shader",
+                new ResourceIdentifier("shaders/crosshair_vertex.glsl"),
+                new ResourceIdentifier("shaders/crosshair_fragment.glsl")
+        );
 
         var crosshairTransform = Maths.createTransformationMatrix(new Vector3f(0), 0);
         shader.bind();

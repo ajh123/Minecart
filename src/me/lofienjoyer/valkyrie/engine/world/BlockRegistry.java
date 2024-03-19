@@ -5,6 +5,9 @@ import me.lofienjoyer.valkyrie.engine.graphics.mesh.BlockMeshType;
 import me.lofienjoyer.valkyrie.engine.utils.YamlLoader;
 import me.lofienjoyer.valkyrie.engine.world.registry.BlockBuilder;
 import org.yaml.snakeyaml.Yaml;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
+import uk.minersonline.Minecart.resource.ResourceLoadingException;
+import uk.minersonline.Minecart.resource.ResourceManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,7 +19,7 @@ public class BlockRegistry {
 
     private static Block[] BLOCKS;
     public static int TILESET_TEXTURE_ID;
-    private static List<String> texturesList;
+    private static List<ResourceIdentifier> texturesList;
 
     public static void setup() {
         Valkyrie.LOG.info("Setting up block registry...");
@@ -44,11 +47,15 @@ public class BlockRegistry {
     }
 
     private static void loadBlocks() {
-        File blocksFolder = new File("res/blocks");
+        File blocksFolder = null;
+        try {
+            blocksFolder = ResourceManager.loadFile(new ResourceIdentifier("blocks"));
+        } catch (ResourceLoadingException e) {
+            throw new RuntimeException(e);
+        }
         if (!blocksFolder.exists()) {
             throw new RuntimeException("res/blocks folder not found!");
         }
-
         var blocksToLoad = new ArrayList<BlockBuilder>();
 
         var loader = new YamlLoader();
@@ -66,17 +73,18 @@ public class BlockRegistry {
             var builder = new BlockBuilder();
 
             String name = loader.get("name", String.class);
-            int texture = texturesList.indexOf(loader.get("texture", String.class));
+            ResourceIdentifier identifier = new ResourceIdentifier(loader.get("texture", String.class));
+            int texture = texturesList.indexOf(identifier);
 
             builder.setName(name);
             builder.setTexture(texture);
 
-            loader.ifDataPresent("northTexture", String.class, (value) -> builder.setNorthTexture(texturesList.indexOf(value)));
-            loader.ifDataPresent("southTexture", String.class, (value) -> builder.setSouthTexture(texturesList.indexOf(value)));
-            loader.ifDataPresent("westTexture", String.class, (value) -> builder.setWestTexture(texturesList.indexOf(value)));
-            loader.ifDataPresent("eastTexture", String.class, (value) -> builder.setEastTexture(texturesList.indexOf(value)));
-            loader.ifDataPresent("topTexture", String.class, (value) -> builder.setTopTexture(texturesList.indexOf(value)));
-            loader.ifDataPresent("bottomTexture", String.class, (value) -> builder.setBottomTexture(texturesList.indexOf(value)));
+            loader.ifDataPresent("northTexture", String.class, (value) -> builder.setNorthTexture(texturesList.indexOf(new ResourceIdentifier(value))));
+            loader.ifDataPresent("southTexture", String.class, (value) -> builder.setSouthTexture(texturesList.indexOf(new ResourceIdentifier(value))));
+            loader.ifDataPresent("westTexture", String.class, (value) -> builder.setWestTexture(texturesList.indexOf(new ResourceIdentifier(value))));
+            loader.ifDataPresent("eastTexture", String.class, (value) -> builder.setEastTexture(texturesList.indexOf(new ResourceIdentifier(value))));
+            loader.ifDataPresent("topTexture", String.class, (value) -> builder.setTopTexture(texturesList.indexOf(new ResourceIdentifier(value))));
+            loader.ifDataPresent("bottomTexture", String.class, (value) -> builder.setBottomTexture(texturesList.indexOf(new ResourceIdentifier(value))));
 
             builder.setTransparent(loader.get("transparent", Boolean.class, false));
             builder.setShouldDrawBetween(loader.get("drawBetween", Boolean.class, false));
@@ -108,8 +116,13 @@ public class BlockRegistry {
     }
 
     private static void loadTextures() {
-        var texturesFolder = new File("res/textures/blocks");
-        if (!texturesFolder.exists()) {
+		File texturesFolder = null;
+		try {
+			texturesFolder = ResourceManager.loadFile(new ResourceIdentifier("textures/blocks"));
+		} catch (ResourceLoadingException e) {
+			throw new RuntimeException(e);
+		}
+		if (!texturesFolder.exists()) {
             throw new RuntimeException("res/textures folder not found!");
         }
 
@@ -119,17 +132,18 @@ public class BlockRegistry {
                 continue;
             }
 
-            texturesList.add(textureFile.getName().replace(".png", ""));
+            ResourceIdentifier texture = new ResourceIdentifier(textureFile.getName().replace(".png", ""));
+            texturesList.add(texture);
         }
 
-        TILESET_TEXTURE_ID = Valkyrie.LOADER.loadTileset(texturesList.toArray(new String[0]));
+        TILESET_TEXTURE_ID = Valkyrie.LOADER.loadTileset(texturesList);
     }
 
     private static int getTextureId(String textureName) {
-        int textureId = texturesList.indexOf("res/textures/blocks/" + textureName + ".png");
+        int textureId = texturesList.indexOf(new ResourceIdentifier("textures/blocks/" + textureName + ".png"));
 
         if (textureId == -1) {
-            texturesList.add("res/textures/blocks/" + textureName + ".png");
+            texturesList.add(new ResourceIdentifier("textures/blocks/" + textureName + ".png"));
             textureId = texturesList.size() - 1;
         }
 

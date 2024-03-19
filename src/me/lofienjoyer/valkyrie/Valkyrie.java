@@ -16,6 +16,7 @@ import me.lofienjoyer.valkyrie.engine.resources.ResourceLoader;
 import me.lofienjoyer.valkyrie.engine.scene.IScene;
 import me.lofienjoyer.valkyrie.engine.world.BlockRegistry;
 import org.lwjgl.opengl.GL;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -48,10 +49,14 @@ public class Valkyrie {
 
     public Valkyrie() {
         LOG.setLevel(Level.INFO);
+        Window.WindowProperties properties = new Window.WindowProperties(
+                "Valkyrie",
+                new ResourceIdentifier("textures/icon/icon256.png")
+        );
 
         this.config = Config.getInstance();
-        this.input = Input.getInstance();
-        this.window = Window.getInstance();
+        this.input = Input.getInstance(properties);
+        this.window = Window.getInstance(properties);
         WINDOW_ID = window.getId();
     }
 
@@ -102,7 +107,11 @@ public class Valkyrie {
         long lastFrame = System.nanoTime();
         float delta = 0f;
 
-        var fboShader = ResourceLoader.loadShader("FBO Shader", "res/shaders/fbo/fbo_vert.glsl", "res/shaders/fbo/fbo_frag.glsl");
+        var fboShader = ResourceLoader.loadShader(
+                "FBO Shader",
+                new ResourceIdentifier("shaders/fbo/fbo_vert.glsl"),
+                new ResourceIdentifier("shaders/fbo/fbo_frag.glsl")
+        );
         var quadMesh = new QuadMesh();
 
         while (window.keepOpen()) {

@@ -1,8 +1,14 @@
 package me.lofienjoyer.valkyrie.engine.graphics.texture;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
+import uk.minersonline.Minecart.resource.ResourceManager;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
@@ -12,7 +18,7 @@ public class Texture {
 
     private final int id;
 
-    public Texture(String fileName) throws Exception {
+    public Texture(ResourceIdentifier fileName) throws Exception {
         this(loadTexture(fileName));
     }
 
@@ -28,17 +34,23 @@ public class Texture {
         return id;
     }
 
-    private static int loadTexture(String fileName) throws Exception {
+    private static int loadTexture(ResourceIdentifier fileName) throws Exception {
         int width;
         int height;
         ByteBuffer buf;
+        File file = ResourceManager.loadFile(fileName);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer w = stack.mallocInt(1);
             IntBuffer h = stack.mallocInt(1);
             IntBuffer channels = stack.mallocInt(1);
 
-            buf = stbi_load(fileName, w, h, channels, 4);
+            byte[] data = Files.readAllBytes(file.toPath());
+            ByteBuffer img = BufferUtils.createByteBuffer(data.length);
+            img.put(data);
+            img.flip();
+
+            buf = stbi_load_from_memory(img, w, h, channels, 4);
             if (buf == null) {
                 throw new Exception("Image file [" + fileName  + "] not loaded: " + stbi_failure_reason());
             }

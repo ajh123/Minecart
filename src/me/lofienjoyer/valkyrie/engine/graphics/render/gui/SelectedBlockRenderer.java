@@ -11,6 +11,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 public class SelectedBlockRenderer {
 
@@ -61,9 +62,11 @@ public class SelectedBlockRenderer {
             return;
 
         mesh = new Mesh(positions, indices);
-        shader = ResourceLoader.loadShader("Selected Block Shader",
-           "res/shaders/gui/selected_block_vert.glsl",
-           "res/shaders/gui/selected_block_frag.glsl");
+        shader = ResourceLoader.loadShader(
+                "Selected Block Shader",
+                new ResourceIdentifier("shaders/gui/selected_block_vert.glsl"),
+                new ResourceIdentifier("shaders/gui/selected_block_frag.glsl")
+        );
         transformationMatrix = Maths.createTransformationMatrix(new Vector2f(1, 0.5f), new Vector3f(30, 30, 0));
 
         loaded = true;

@@ -8,6 +8,7 @@ import me.lofienjoyer.valkyrie.engine.resources.ResourceLoader;
 import me.lofienjoyer.valkyrie.engine.utils.Maths;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
 import static org.lwjgl.opengl.GL45.*;
 
@@ -81,7 +82,11 @@ public class SkyboxRenderer {
         // TODO: 9/1/24 Dispose mesh and texture
         mesh = new Mesh(VERTICES);
         texture = Valkyrie.LOADER.loadCubeMap(TEXTURE_FILES);
-        shader = ResourceLoader.loadShader("Skybox Shader", "res/shaders/skybox/skybox_vert.glsl", "res/shaders/skybox/skybox_frag.glsl");
+        shader = ResourceLoader.loadShader(
+                "Skybox Shader",
+                new ResourceIdentifier("shaders/skybox/skybox_vert.glsl"),
+                new ResourceIdentifier("shaders/skybox/skybox_frag.glsl")
+        );
         fogColor = new Vector3f();
 
         loaded = true;

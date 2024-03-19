@@ -21,7 +21,7 @@ public class Input {
     private final Vector2d cursorPosition;
     private final Vector2d cursorMovement;
 
-    private Input() {
+    private Input(Window.WindowProperties properties) {
         this.pressedKeys = new boolean[KEY_COUNT];
         this.justPressedKeys = new boolean[KEY_COUNT];
 
@@ -31,7 +31,7 @@ public class Input {
         this.cursorPosition = new Vector2d();
         this.cursorMovement = new Vector2d();
 
-        setup();
+        setup(properties);
     }
 
     public synchronized void update() {
@@ -47,8 +47,8 @@ public class Input {
         cursorMovement.y = 0;
     }
 
-    private void setup() {
-        Window window = Window.getInstance();
+    private void setup(Window.WindowProperties properties) {
+        Window window = Window.getInstance(properties);
 
         window.registerKeyCallback(this::keyCallback);
         window.registerButtonCallback(this::mouseButtonCallback);
@@ -105,9 +105,9 @@ public class Input {
         return (int)instance.cursorMovement.y;
     }
 
-    public static Input getInstance() {
+    public static Input getInstance(Window.WindowProperties properties) {
         if (instance == null)
-            instance = new Input();
+            instance = new Input(properties);
 
         return instance;
     }

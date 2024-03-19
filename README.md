@@ -15,8 +15,6 @@
   </a>
 </div>
 
-Minecart is a fork of Valkyrie, Valkyrie can be found at <https://github.com/lofi-enjoyer/Valkyrie>
-
 #### OpenGL &amp; Java 11 Voxel Engine
 
 <details open="open">
@@ -34,7 +32,14 @@ Minecart is a fork of Valkyrie, Valkyrie can be found at <https://github.com/lof
 
 ## About the project 📝
 
+Minecart is a project with the objective of creating a customisable voxel based game engine, allowing people to create a voxel game they want.
+
+> ![IMPORTANT]
+> Minecart is a fork of Valkyrie, Valkyrie can be found at <https://github.com/lofi-enjoyer/Valkyrie>
+> Both Minecart and Valkyrie are licensed with the GPL-3.0 license.
+
 Valkyrie is a project with the objective of putting together a basic Hytale-like game engine, to be used as a foundation for a bigger game.
+
 
 ![2022-02-21 15-52-14 (5)](https://user-images.githubusercontent.com/25750692/155811531-ac8be712-774b-420f-b6e2-2bbdf0e50922.gif)
 
@@ -93,4 +98,4 @@ mvn package
 
 ## License 📜 
 
-This project is under a GPL-3.0 license. Check [`LICENSE`](https://github.com/lofi-enjoyer/Valkyrie/blob/master/LICENSE) for more information.
+This project is under a GPL-3.0 license. Check [`LICENSE`](https://github.com/ajh123/Minecart/blob/master/LICENSE) for more information.

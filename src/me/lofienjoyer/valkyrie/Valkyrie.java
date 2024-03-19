@@ -18,6 +18,7 @@ import me.lofienjoyer.valkyrie.engine.world.BlockRegistry;
 import org.lwjgl.opengl.GL;
 import uk.minersonline.Minecart.resource.ResourceIdentifier;
 
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
@@ -63,7 +64,7 @@ public class Valkyrie {
     /**
      * Sets up the basic resources for the engine
      */
-    public void init() {
+    public void init(List<String> namespaces) {
         // Sets up the meshing service
         var meshingThreadCount = config.get("meshing_thread_count", Integer.class);
         meshingService = new ScheduledThreadPoolExecutor(config.get("meshing_thread_count", Integer.class), r -> {
@@ -86,7 +87,7 @@ public class Valkyrie {
         defaultFont = new ValkyrieFont("res/fonts/Silkscreen-Regular.ttf", 16);
 
         // Sets up the block registry
-        BlockRegistry.setup();
+        BlockRegistry.setup(namespaces);
 
         // Sets up the window properties and callbacks, and then shows it
         window.setSize(config.get("window_width", Integer.class), config.get("window_height", Integer.class));

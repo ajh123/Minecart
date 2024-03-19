@@ -84,8 +84,8 @@ Valkyrie is a project with the objective of putting together a basic Hytale-like
 
 1. Clone the repository and access the directory
 ```sh
-git clone https://github.com/lofi-enjoyer/Valkyrie
-cd Valkyrie/
+git clone https://github.com/ajh123/Minecart
+cd Minecart/
 ```
 
 2. Build the project with Maven

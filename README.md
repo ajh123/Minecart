@@ -34,7 +34,7 @@
 
 Minecart is a project with the objective of creating a customisable voxel based game engine, allowing people to create a voxel game they want.
 
-> ![IMPORTANT]
+> [!IMPORTANT]  
 > Minecart is a fork of Valkyrie, Valkyrie can be found at <https://github.com/lofi-enjoyer/Valkyrie>
 > Both Minecart and Valkyrie are licensed with the GPL-3.0 license.
 

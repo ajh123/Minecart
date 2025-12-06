@@ -32,7 +32,7 @@ def get_git_version():
     return 'unknown'
 
 game_version = get_git_version()
-print(f"Building version: {game_version}")
+print(f"Building Minecart version: {game_version}")
 
 # Create base environment
 env = Environment()

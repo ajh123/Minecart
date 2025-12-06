@@ -7,9 +7,13 @@
 #include "backends/imgui_impl_sdlgpu3.h"
 
 #include <memory>
-#include <functional>
 #include <stdexcept>
 #include <string>
+
+// Forward declaration of Game class
+namespace minecart {
+    class Game;
+}
 
 namespace minecart::graphics {
 
@@ -56,13 +60,10 @@ namespace minecart::graphics {
         SDL_GPUDevice* device;
     };
 
-    // Use std::function for more flexibility (lambdas with captures)
-    using ImGuiRenderFunction = std::function<void()>;
-    using GameRenderFunction = std::function<SDL_AppResult(FrameContext&)>;
-
     class Window {
     public:
-        Window(ImGuiRenderFunction imguiRenderFunc, GameRenderFunction gameRenderFunc);
+        // Constructor takes a non-owning pointer to a Game instance
+        explicit Window(Game* game);
         ~Window();
 
         // Prevent copying (Window manages unique resources)
@@ -72,6 +73,10 @@ namespace minecart::graphics {
         // Allow moving
         Window(Window&&) noexcept = default;
         Window& operator=(Window&&) noexcept = default;
+
+        // Main entry point - initializes, runs game loop, and shuts down
+        // Returns the final application result
+        SDL_AppResult run();
 
         // Throws WindowException on failure
         SDL_AppResult initialize();
@@ -91,8 +96,7 @@ namespace minecart::graphics {
     private:
         SDLWindowPtr window;
         SDLGPUDevicePtr device;
-        ImGuiRenderFunction imguiRenderFunction;
-        GameRenderFunction gameRenderFunction;
+        Game* game;  // Non-owning pointer to game instance
         SDL_FColor clearColor = {0.1f, 0.1f, 0.1f, 1.0f};
         bool initialized = false;
         bool imguiInitialized = false;

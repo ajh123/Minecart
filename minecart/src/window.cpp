@@ -3,19 +3,15 @@
 
 namespace minecart::graphics {
 
-    Window::Window(ImGuiRenderFunction imguiRenderFunc, GameRenderFunction gameRenderFunc)
+    Window::Window(Game* game)
         : window(nullptr),
           device(nullptr),
-          imguiRenderFunction(std::move(imguiRenderFunc)),
-          gameRenderFunction(std::move(gameRenderFunc)),
+          game(game),
           initialized(false),
           imguiInitialized(false) {
         
-        if (!imguiRenderFunction) {
-            throw WindowException("ImGui render function cannot be null");
-        }
-        if (!gameRenderFunction) {
-            throw WindowException("Game render function cannot be null");
+        if (!game) {
+            throw WindowException("Game pointer cannot be null");
         }
     }
 
@@ -31,9 +27,11 @@ namespace minecart::graphics {
             throw WindowException("Window already initialized");
         }
 
+        std::string title = game->get_name() + " (" + game->get_version() + ")";
+
         // Create the window
         SDL_Window* rawWindow = SDL_CreateWindow(
-            minecart::get_minecart_version().c_str(), 
+            title.c_str(), 
             960, 540, 
             SDL_WINDOW_RESIZABLE
         );
@@ -103,7 +101,43 @@ namespace minecart::graphics {
         imguiInitialized = true;
         initialized = true;
 
+        // Call game's init method
+        if (!game->on_init()) {
+            shutdown();
+            throw WindowException("Game initialization failed");
+        }
+
         return SDL_APP_CONTINUE;
+    }
+
+    SDL_AppResult Window::run() {
+        SDL_AppResult result = initialize();
+        if (result != SDL_APP_CONTINUE) {
+            return result;
+        }
+
+        // Main loop
+        bool running = true;
+        while (running) {
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+                result = process_event(&event);
+                if (result != SDL_APP_CONTINUE) {
+                    running = false;
+                    break;
+                }
+            }
+
+            if (running) {
+                result = render_frame();
+                if (result != SDL_APP_CONTINUE) {
+                    running = false;
+                }
+            }
+        }
+
+        shutdown();
+        return result;
     }
 
     SDL_AppResult Window::process_event(SDL_Event* event) {
@@ -135,8 +169,8 @@ namespace minecart::graphics {
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        // Call user's ImGui render function
-        imguiRenderFunction();
+        // Call game's ImGui render function
+        game->on_imgui_render();
 
         // Render ImGui
         ImGui::Render();
@@ -198,7 +232,7 @@ namespace minecart::graphics {
             device.get()
         };
 
-        SDL_AppResult result = gameRenderFunction(frameContext);
+        SDL_AppResult result = game->on_render(frameContext) ? SDL_APP_CONTINUE : SDL_APP_SUCCESS;
 
         // Render ImGui draw data
         ImGui_ImplSDLGPU3_RenderDrawData(ImGui::GetDrawData(), commandBuffer, renderPass);
@@ -217,6 +251,11 @@ namespace minecart::graphics {
     void Window::shutdown() noexcept {
         if (!initialized) {
             return;
+        }
+
+        // Call game's shutdown method first (while device is still valid)
+        if (game) {
+            game->on_shutdown();
         }
 
         // Cleanup ImGui (in reverse order of initialization)

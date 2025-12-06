@@ -1,0 +1,36 @@
+Import('env')
+
+# Create a copy of the environment for the shared library
+shared_env = env.Clone()
+
+# Add include path
+shared_env.Append(CPPPATH=['include'])
+
+# Add SDL3 configuration
+shared_env.Append(CPPPATH=[env['SDL3_INCLUDE']])
+shared_env.Append(LIBPATH=[env['SDL3_LIBPATH']])
+shared_env.Append(LIBS=env['SDL3_LIBS'])
+
+# Add ImGui include paths
+shared_env.Append(CPPPATH=env['IMGUI_INCLUDE'])
+imgui_sources = env['IMGUI_SOURCES']
+
+# Add spdlog configuration
+shared_env.Append(CPPPATH=[env['SPDLOG_INCLUDE']])
+shared_env.Append(LIBPATH=[env['SPDLOG_LIBPATH']])
+shared_env.Append(LIBS=env['SPDLOG_LIBS'])
+shared_env.Append(CPPDEFINES=['SPDLOG_COMPILED_LIB'])  # Required for compiled mode
+
+# Add SDL_shadercross configuration
+shared_env.Append(CPPPATH=[env['SHADERCROSS_INCLUDE']])
+shared_env.Append(LIBPATH=[env['SHADERCROSS_LIBPATH']])
+shared_env.Append(LIBS=env['SHADERCROSS_LIBS'])
+
+# Gather source files
+sources = Glob('src/*.cpp')
+
+# Build as a static library
+shared_lib = shared_env.StaticLibrary('minecart', sources)
+
+# Export the library and include path for other modules
+Return('shared_lib')

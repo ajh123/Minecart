@@ -1,0 +1,232 @@
+# Third-Party Libraries - SCons Build Configuration
+import os
+import subprocess
+
+Import('env', 'build_type', 'is_windows')
+
+# ============================================================================
+# SDL3 Configuration - Auto-build via CMake
+# ============================================================================
+sdl3_dir = Dir('.').abspath + '/SDL3'
+sdl3_build_dir = os.path.join(sdl3_dir, 'build')
+sdl3_include = os.path.join(sdl3_dir, 'include')
+
+if is_windows:
+    sdl3_lib_dir = os.path.join(sdl3_build_dir, build_type)
+    sdl3_lib_file = os.path.join(sdl3_lib_dir, 'SDL3-static.lib')
+else:
+    sdl3_lib_dir = sdl3_build_dir
+    sdl3_lib_file = os.path.join(sdl3_lib_dir, 'libSDL3.a')
+
+def build_sdl3():
+    """Build SDL3 using CMake if not already built."""
+    if os.path.exists(sdl3_lib_file):
+        print("SDL3 already built, skipping...")
+        return
+    
+    if not os.path.exists(os.path.join(sdl3_dir, 'CMakeLists.txt')):
+        print("ERROR: SDL3 not found! Run: git submodule update --init --recursive")
+        Exit(1)
+    
+    print("Building SDL3 with CMake...")
+    os.makedirs(sdl3_build_dir, exist_ok=True)
+    
+    # Configure SDL3
+    cmake_configure = [
+        'cmake',
+        '-S', sdl3_dir,
+        '-B', sdl3_build_dir,
+        f'-DCMAKE_BUILD_TYPE={build_type}',
+        '-DSDL_SHARED=OFF',
+        '-DSDL_STATIC=ON',
+        '-DSDL_TEST=OFF'
+    ]
+    
+    # Use static runtime on Windows to match SCons build
+    if is_windows:
+        runtime = 'MultiThreadedDebug' if build_type == 'Debug' else 'MultiThreaded'
+        cmake_configure.append(f'-DCMAKE_MSVC_RUNTIME_LIBRARY={runtime}')
+    
+    result = subprocess.run(cmake_configure, cwd=sdl3_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake configure failed for SDL3")
+        Exit(1)
+    
+    # Build SDL3
+    cmake_build = ['cmake', '--build', sdl3_build_dir, '--config', build_type, '-j']
+    result = subprocess.run(cmake_build, cwd=sdl3_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake build failed for SDL3")
+        Exit(1)
+    
+    print("SDL3 built successfully!")
+
+# Build SDL3 before anything else
+build_sdl3()
+
+# Add SDL3 to environment (for client only - exported separately)
+env['SDL3_INCLUDE'] = sdl3_include
+env['SDL3_LIBPATH'] = sdl3_lib_dir
+env['SDL3_LIBS'] = ['SDL3-static']
+
+# SDL3 static library requires additional system libraries on Windows
+if is_windows:
+    env['SDL3_LIBS'].extend(['winmm', 'imm32', 'version', 'setupapi', 'user32', 'gdi32', 'ole32', 'oleaut32', 'shell32', 'advapi32'])
+
+
+# ============================================================================
+# spdlog Configuration - Compiled library
+# ============================================================================
+spdlog_dir = Dir('.').abspath + '/spdlog'
+spdlog_build_dir = os.path.join(spdlog_dir, 'build')
+spdlog_include = os.path.join(spdlog_dir, 'include')
+
+if is_windows:
+    spdlog_lib_dir = os.path.join(spdlog_build_dir, build_type)
+    spdlog_lib_file = os.path.join(spdlog_lib_dir, 'spdlog.lib')
+else:
+    spdlog_lib_dir = spdlog_build_dir
+    spdlog_lib_file = os.path.join(spdlog_lib_dir, 'libspdlog.a')
+
+def build_spdlog():
+    """Build spdlog using CMake if not already built."""
+    if os.path.exists(spdlog_lib_file):
+        print("spdlog already built, skipping...")
+        return
+    
+    if not os.path.exists(os.path.join(spdlog_dir, 'CMakeLists.txt')):
+        print("ERROR: spdlog not found! Run: git submodule update --init --recursive")
+        Exit(1)
+    
+    print("Building spdlog with CMake...")
+    os.makedirs(spdlog_build_dir, exist_ok=True)
+    
+    cmake_configure = [
+        'cmake',
+        '-S', spdlog_dir,
+        '-B', spdlog_build_dir,
+        f'-DCMAKE_BUILD_TYPE={build_type}',
+        '-DSPDLOG_BUILD_SHARED=OFF',  # Static library
+        '-DSPDLOG_BUILD_EXAMPLE=OFF',
+        '-DSPDLOG_BUILD_TESTS=OFF'
+    ]
+    
+    # Use static runtime on Windows to match SCons build
+    if is_windows:
+        runtime = 'MultiThreadedDebug' if build_type == 'Debug' else 'MultiThreaded'
+        cmake_configure.append(f'-DCMAKE_MSVC_RUNTIME_LIBRARY={runtime}')
+    
+    result = subprocess.run(cmake_configure, cwd=spdlog_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake configure failed for spdlog")
+        Exit(1)
+    
+    cmake_build = ['cmake', '--build', spdlog_build_dir, '--config', build_type, '-j']
+    result = subprocess.run(cmake_build, cwd=spdlog_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake build failed for spdlog")
+        Exit(1)
+    
+    print("spdlog built successfully!")
+
+build_spdlog()
+
+env['SPDLOG_INCLUDE'] = spdlog_include
+env['SPDLOG_LIBPATH'] = spdlog_lib_dir
+env['SPDLOG_LIBS'] = ['spdlog']
+
+
+# ============================================================================
+# SDL_shadercross Configuration - Auto-build via CMake
+# ============================================================================
+shadercross_dir = Dir('.').abspath + '/SDL_shadercross'
+shadercross_build_dir = os.path.join(shadercross_dir, 'build')
+shadercross_include = os.path.join(shadercross_dir, 'include')
+
+if is_windows:
+    shadercross_lib_dir = os.path.join(shadercross_build_dir, build_type)
+    shadercross_lib_file = os.path.join(shadercross_lib_dir, 'SDL3_shadercross-static.lib')
+else:
+    shadercross_lib_dir = shadercross_build_dir
+    shadercross_lib_file = os.path.join(shadercross_lib_dir, 'libSDL3_shadercross.a')
+
+def build_shadercross():
+    """Build SDL_shadercross using CMake if not already built."""
+    if os.path.exists(shadercross_lib_file):
+        print("SDL_shadercross already built, skipping...")
+        return
+    
+    if not os.path.exists(os.path.join(shadercross_dir, 'CMakeLists.txt')):
+        print("ERROR: SDL_shadercross not found! Run: git submodule update --init --recursive")
+        Exit(1)
+    
+    print("Building SDL_shadercross with CMake...")
+    os.makedirs(shadercross_build_dir, exist_ok=True)
+    
+    # Configure SDL_shadercross
+    cmake_configure = [
+        'cmake',
+        '-S', shadercross_dir,
+        '-B', shadercross_build_dir,
+        f'-DCMAKE_BUILD_TYPE={build_type}',
+        f'-DSDL3_DIR={sdl3_build_dir}',
+        '-DSDLSHADERCROSS_SHARED=OFF',
+        '-DSDLSHADERCROSS_STATIC=ON',
+        '-DSDLSHADERCROSS_VENDORED=ON',
+        '-DSDLSHADERCROSS_CLI=OFF'
+    ]
+    
+    # Use static runtime on Windows to match SCons build
+    if is_windows:
+        runtime = 'MultiThreadedDebug' if build_type == 'Debug' else 'MultiThreaded'
+        cmake_configure.append(f'-DCMAKE_MSVC_RUNTIME_LIBRARY={runtime}')
+    
+    result = subprocess.run(cmake_configure, cwd=shadercross_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake configure failed for SDL_shadercross")
+        Exit(1)
+    
+    # Build SDL_shadercross
+    cmake_build = ['cmake', '--build', shadercross_build_dir, '--config', build_type, '-j']
+    result = subprocess.run(cmake_build, cwd=shadercross_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake build failed for SDL_shadercross")
+        Exit(1)
+    
+    print("SDL_shadercross built successfully!")
+
+# Build SDL_shadercross after SDL3
+build_shadercross()
+
+env['SHADERCROSS_INCLUDE'] = shadercross_include
+env['SHADERCROSS_LIBPATH'] = shadercross_lib_dir
+env['SHADERCROSS_LIBS'] = ['SDL3_shadercross-static']
+
+# Add paths to vendored static libraries (SPIRV-Cross, etc.)
+if is_windows:
+    spirv_cross_lib_dir = os.path.join(shadercross_build_dir, 'external', 'SPIRV-Cross', build_type)
+    env['SHADERCROSS_LIBPATH'] = [shadercross_lib_dir, spirv_cross_lib_dir]
+    env['SHADERCROSS_LIBS'].extend(['spirv-cross-c', 'spirv-cross-glsl', 'spirv-cross-hlsl', 'spirv-cross-msl', 'spirv-cross-reflect', 'spirv-cross-core'])
+
+
+# ============================================================================
+# ImGui Configuration
+# ============================================================================
+imgui_dir = Dir('.').abspath + '/imgui'
+imgui_include = imgui_dir
+imgui_backends = os.path.join(imgui_dir, 'backends')
+
+# ImGui source files (core + SDL3/GPU backend)
+imgui_sources = [
+    os.path.join(imgui_dir, 'imgui.cpp'),
+    os.path.join(imgui_dir, 'imgui_demo.cpp'),
+    os.path.join(imgui_dir, 'imgui_draw.cpp'),
+    os.path.join(imgui_dir, 'imgui_tables.cpp'),
+    os.path.join(imgui_dir, 'imgui_widgets.cpp'),
+    os.path.join(imgui_backends, 'imgui_impl_sdl3.cpp'),
+    os.path.join(imgui_backends, 'imgui_impl_sdlgpu3.cpp'),
+]
+
+# Export for use in SConscript files
+env['IMGUI_INCLUDE'] = [imgui_include, imgui_backends]
+env['IMGUI_SOURCES'] = imgui_sources

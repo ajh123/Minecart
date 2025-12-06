@@ -1,0 +1,13 @@
+[submodule "third-party/SDL3"]
+	path = third-party/SDL3
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "third-party/spdlog"]
+	path = third-party/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "third-party/SDL_shadercross"]
+	path = third-party/SDL_shadercross
+	url = https://github.com/libsdl-org/SDL_shadercross
+[submodule "third-party/imgui"]
+	path = third-party/imgui
+	url = https://github.com/ocornut/imgui
+	branch = docking

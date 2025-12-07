@@ -100,6 +100,7 @@ namespace minecart::graphics {
         SDL_FColor clearColor = {0.1f, 0.1f, 0.1f, 1.0f};
         bool initialized = false;
         bool imguiInitialized = false;
+        uint64_t m_lastFrameTime = 0;
     };
 
 } // namespace minecart::graphics

@@ -100,6 +100,7 @@ namespace minecart::graphics {
 
         imguiInitialized = true;
         initialized = true;
+        m_lastFrameTime = SDL_GetTicks();
 
         // Call game's init method
         if (!game->on_init()) {
@@ -119,6 +120,19 @@ namespace minecart::graphics {
         // Main loop
         bool running = true;
         while (running) {
+            // Start the ImGui frame BEFORE processing events
+            // so we can query io.WantCaptureMouse/Keyboard
+            ImGui_ImplSDLGPU3_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
+
+            // Calculate delta time
+            uint64_t currentTime = SDL_GetTicks();
+            float deltaTime = (currentTime - m_lastFrameTime) / 1000.0f;
+            m_lastFrameTime = currentTime;
+
+            game->on_update(deltaTime);
+
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
                 result = process_event(&event);
@@ -149,8 +163,14 @@ namespace minecart::graphics {
             throw WindowException("Event pointer is null");
         }
 
-        // Pass events to ImGui
+        // Pass events to ImGui 
         ImGui_ImplSDL3_ProcessEvent(event);
+
+        // Let the game handle the event if ImGui did not capture it
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse && !io.WantCaptureKeyboard) {
+            game->on_event(*event);
+        }
 
         if (event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
             return SDL_APP_SUCCESS;
@@ -163,11 +183,6 @@ namespace minecart::graphics {
         if (!initialized) {
             throw WindowException("Window not initialized");
         }
-
-        // Start the ImGui frame
-        ImGui_ImplSDLGPU3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
 
         // Call game's ImGui render function
         game->on_imgui_render();

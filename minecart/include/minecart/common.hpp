@@ -1,15 +1,18 @@
 #pragma once
 
+#include <SDL3/SDL.h>
+
 #include <string>
 #include <memory>
 
-namespace minecart {
+#include "minecart/camera.hpp"
+#include "minecart/maths.hpp"
+#include "minecart/model.hpp"
+#include "minecart/shader.hpp"
+#include "minecart/window.hpp"
 
-// Forward declarations
-namespace graphics {
-    class Window;
-    struct FrameContext;
-}
+
+namespace minecart {
 
 /**
  * @brief Get the version string for the Minecart engine
@@ -67,6 +70,26 @@ public:
      * @return true to continue, false to exit
      */
     virtual bool on_render(graphics::FrameContext& frameContext) = 0;
+
+    /**
+     * @brief Called for each SDL event.
+     * 
+     * Use this to handle input events (keyboard, mouse, etc.)
+     * 
+     * @param event The SDL event to process
+     * @return true if the event was handled, false otherwise
+     */
+    virtual bool on_event(const SDL_Event& event) { return true; }
+
+    /**
+     * @brief Called every frame to update game logic.
+     * 
+     * This is called before rendering each frame.
+     * 
+     * @param deltaTime Time elapsed since last frame in seconds
+     * @return true to continue, false to exit
+     */
+    virtual bool on_update(float deltaTime) { return true; }
 
     /**
      * @brief Called every frame to render ImGui content.

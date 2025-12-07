@@ -80,8 +80,20 @@ namespace minecart::graphics {
         // Build the graphics pipeline with the given configuration
         void build_pipeline(const PipelineConfig& config);
 
-        // Bind the pipeline for rendering
-        void bind(SDL_GPURenderPass* renderPass) const;
+        // Bind the pipeline for rendering (call before setting uniforms and drawing)
+        void bind(SDL_GPUCommandBuffer* commandBuffer, SDL_GPURenderPass* renderPass);
+
+        // Set uniform data for vertex shader at specified slot (0-3)
+        template<typename T>
+        void set_vertex_uniform(uint32_t slot, const T& data) {
+            set_vertex_uniform_raw(slot, &data, sizeof(T));
+        }
+
+        // Set uniform data for fragment shader at specified slot (0-3)
+        template<typename T>
+        void set_fragment_uniform(uint32_t slot, const T& data) {
+            set_fragment_uniform_raw(slot, &data, sizeof(T));
+        }
 
         // Check if shader is ready to use
         [[nodiscard]] bool is_ready() const noexcept;
@@ -90,12 +102,18 @@ namespace minecart::graphics {
         [[nodiscard]] SDL_GPUGraphicsPipeline* get_pipeline() const noexcept { return m_pipeline.get(); }
 
     private:
+        void set_vertex_uniform_raw(uint32_t slot, const void* data, uint32_t size);
+        void set_fragment_uniform_raw(uint32_t slot, const void* data, uint32_t size);
+
         SDL_GPUDevice* m_device;    // Non-owning
         SDL_Window* m_window;       // Non-owning
 
         GPUShaderPtr m_vertexShader;
         GPUShaderPtr m_fragmentShader;
         GPUPipelinePtr m_pipeline;
+
+        // Current command buffer for pushing uniforms
+        SDL_GPUCommandBuffer* m_currentCommandBuffer = nullptr;
     };
 
 } // namespace minecart::graphics

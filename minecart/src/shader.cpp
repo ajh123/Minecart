@@ -196,11 +196,26 @@ namespace minecart::graphics {
         m_pipeline.reset(pipeline);
     }
 
-    void Shader::bind(SDL_GPURenderPass* renderPass) const {
+    void Shader::bind(SDL_GPUCommandBuffer* commandBuffer, SDL_GPURenderPass* renderPass) {
         if (!m_pipeline) {
             throw ShaderException("Pipeline not built - call build_pipeline() first");
         }
+        m_currentCommandBuffer = commandBuffer;
         SDL_BindGPUGraphicsPipeline(renderPass, m_pipeline.get());
+    }
+
+    void Shader::set_vertex_uniform_raw(uint32_t slot, const void* data, uint32_t size) {
+        if (!m_currentCommandBuffer) {
+            throw ShaderException("Shader not bound - call bind() first");
+        }
+        SDL_PushGPUVertexUniformData(m_currentCommandBuffer, slot, data, size);
+    }
+
+    void Shader::set_fragment_uniform_raw(uint32_t slot, const void* data, uint32_t size) {
+        if (!m_currentCommandBuffer) {
+            throw ShaderException("Shader not bound - call bind() first");
+        }
+        SDL_PushGPUFragmentUniformData(m_currentCommandBuffer, slot, data, size);
     }
 
     bool Shader::is_ready() const noexcept {

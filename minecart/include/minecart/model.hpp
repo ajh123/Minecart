@@ -65,8 +65,8 @@ namespace minecart::graphics {
         // Upload data to GPU (call after setting vertices/indices)
         void upload();
 
-        // Render the model using the given shader
-        void render(SDL_GPURenderPass* renderPass, const Shader& shader) const;
+        // Render the model (shader must already be bound with uniforms set)
+        void render(SDL_GPURenderPass* renderPass) const;
 
         // Check if model is ready to render
         [[nodiscard]] bool is_ready() const noexcept;

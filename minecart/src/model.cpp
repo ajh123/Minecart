@@ -1,5 +1,4 @@
 #include "minecart/model.hpp"
-#include "minecart/shader.hpp"
 
 #include <cstring>
 #include <stdexcept>
@@ -173,13 +172,10 @@ namespace minecart::graphics {
         m_uploaded = true;
     }
 
-    void Model::render(SDL_GPURenderPass* renderPass, const Shader& shader) const {
+    void Model::render(SDL_GPURenderPass* renderPass) const {
         if (!is_ready()) {
             return; // Silently skip if not ready
         }
-
-        // Bind the shader's pipeline
-        shader.bind(renderPass);
 
         // Bind vertex buffer
         SDL_GPUBufferBinding vertexBufferBinding{};

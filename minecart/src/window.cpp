@@ -1,5 +1,6 @@
 #include "minecart/window.hpp"
 #include "minecart/common.hpp"
+#include <spdlog/spdlog.h>
 
 namespace minecart::graphics {
 
@@ -247,7 +248,16 @@ namespace minecart::graphics {
             device.get()
         };
 
-        SDL_AppResult result = game->on_render(frameContext) ? SDL_APP_CONTINUE : SDL_APP_SUCCESS;
+        // Call game's render method inside try/catch so exceptions (e.g. shader
+        // related errors) are logged rather than crashing the whole process.
+        SDL_AppResult result = SDL_APP_SUCCESS;
+        try {
+            result = game->on_render(frameContext) ? SDL_APP_CONTINUE : SDL_APP_SUCCESS;
+        }
+        catch (const std::exception& e) {
+            spdlog::error("Render Error: {}", e.what());
+            result = SDL_APP_SUCCESS; // exit gracefully after logging
+        }
 
         // Render ImGui draw data
         ImGui_ImplSDLGPU3_RenderDrawData(ImGui::GetDrawData(), commandBuffer, renderPass);

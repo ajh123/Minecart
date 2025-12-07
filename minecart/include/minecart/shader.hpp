@@ -28,36 +28,8 @@ namespace minecart::graphics {
         }
     };
 
-    struct SDLGPUPipelineDeleter {
-        SDL_GPUDevice* device = nullptr;
-        void operator()(SDL_GPUGraphicsPipeline* pipeline) const noexcept {
-            if (pipeline && device) {
-                SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
-            }
-        }
-    };
-
     // Type aliases for managed resources
     using GPUShaderPtr = std::unique_ptr<SDL_GPUShader, SDLGPUShaderDeleter>;
-    using GPUPipelinePtr = std::unique_ptr<SDL_GPUGraphicsPipeline, SDLGPUPipelineDeleter>;
-
-    // Vertex attribute description for pipeline creation
-    struct VertexAttribute {
-        uint32_t location;
-        SDL_GPUVertexElementFormat format;
-        uint32_t offset;
-    };
-
-    // Configuration for pipeline creation
-    struct PipelineConfig {
-        uint32_t vertexStride = 0;
-        std::span<const VertexAttribute> attributes;
-        SDL_GPUPrimitiveType primitiveType = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-        SDL_GPUFillMode fillMode = SDL_GPU_FILLMODE_FILL;
-        SDL_GPUCullMode cullMode = SDL_GPU_CULLMODE_NONE;
-        SDL_GPUFrontFace frontFace = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
-        bool enableBlend = false;
-    };
 
     class Shader {
     public:
@@ -77,43 +49,34 @@ namespace minecart::graphics {
         void load_vertex_shader(const std::filesystem::path& path, const char* entrypoint = "main");
         void load_fragment_shader(const std::filesystem::path& path, const char* entrypoint = "main");
 
-        // Build the graphics pipeline with the given configuration
-        void build_pipeline(const PipelineConfig& config);
+        // Get the shaders (for pipeline creation elsewhere)
+        [[nodiscard]] SDL_GPUShader* get_vertex_shader() const noexcept { return m_vertexShader.get(); }
+        [[nodiscard]] SDL_GPUShader* get_fragment_shader() const noexcept { return m_fragmentShader.get(); }
 
         // Bind the pipeline for rendering (call before setting uniforms and drawing)
-        void bind(SDL_GPUCommandBuffer* commandBuffer, SDL_GPURenderPass* renderPass);
+        void bind(SDL_GPUCommandBuffer* commandBuffer, SDL_GPURenderPass* renderPass, SDL_GPUGraphicsPipeline* pipeline);
 
         // Set uniform data for vertex shader at specified slot (0-3)
         template<typename T>
-        void set_vertex_uniform(uint32_t slot, const T& data) {
-            set_vertex_uniform_raw(slot, &data, sizeof(T));
+        void set_vertex_uniform(SDL_GPUCommandBuffer* commandBuffer, uint32_t slot, const T& data) {
+            set_vertex_uniform_raw(commandBuffer, slot, &data, sizeof(T));
         }
 
         // Set uniform data for fragment shader at specified slot (0-3)
         template<typename T>
-        void set_fragment_uniform(uint32_t slot, const T& data) {
-            set_fragment_uniform_raw(slot, &data, sizeof(T));
+        void set_fragment_uniform(SDL_GPUCommandBuffer* commandBuffer, uint32_t slot, const T& data) {
+            set_fragment_uniform_raw(commandBuffer, slot, &data, sizeof(T));
         }
 
-        // Check if shader is ready to use
-        [[nodiscard]] bool is_ready() const noexcept;
-
-        // Get the pipeline (for advanced use cases)
-        [[nodiscard]] SDL_GPUGraphicsPipeline* get_pipeline() const noexcept { return m_pipeline.get(); }
-
     private:
-        void set_vertex_uniform_raw(uint32_t slot, const void* data, uint32_t size);
-        void set_fragment_uniform_raw(uint32_t slot, const void* data, uint32_t size);
+        void set_vertex_uniform_raw(SDL_GPUCommandBuffer* commandBuffer, uint32_t slot, const void* data, uint32_t size);
+        void set_fragment_uniform_raw(SDL_GPUCommandBuffer* commandBuffer, uint32_t slot, const void* data, uint32_t size);
 
         SDL_GPUDevice* m_device;    // Non-owning
         SDL_Window* m_window;       // Non-owning
 
         GPUShaderPtr m_vertexShader;
         GPUShaderPtr m_fragmentShader;
-        GPUPipelinePtr m_pipeline;
-
-        // Current command buffer for pushing uniforms
-        SDL_GPUCommandBuffer* m_currentCommandBuffer = nullptr;
     };
 
 } // namespace minecart::graphics

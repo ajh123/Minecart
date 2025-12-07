@@ -1,31 +1,36 @@
 #include "minecart/camera.hpp"
 
 #include <algorithm>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace minecart::graphics {
 
+    constexpr glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f);
+
     Camera::Camera() {
-        update_vectors();
         update();
     }
 
-    void Camera::set_position(const minecart::maths::Vec3& pos) {
+    void Camera::set_position(const glm::vec3& pos) {
         m_position = pos;
+        update();
     }
 
     void Camera::set_position(float x, float y, float z) {
-        m_position = minecart::maths::Vec3{x, y, z};
+        m_position = glm::vec3{x, y, z};
+        update();
     }
 
     void Camera::set_rotation(float pitch, float yaw) {
         // Clamp pitch to avoid gimbal lock
         m_pitch = std::clamp(pitch, -1.5533f, 1.5533f);  // ~89 degrees
         m_yaw = yaw;
-        update_vectors();
+        update();
     }
 
-    void Camera::look_at(const minecart::maths::Vec3& target) {
-        minecart::maths::Vec3 direction = (target - m_position).normalized();
+    void Camera::look_at(const glm::vec3& target) {
+        glm::vec3 direction = glm::normalize(target - m_position);
 
         // Calculate pitch (vertical angle)
         m_pitch = std::asin(direction.y);
@@ -33,7 +38,7 @@ namespace minecart::graphics {
         // Calculate yaw (horizontal angle)
         m_yaw = std::atan2(direction.x, -direction.z);
 
-        update_vectors();
+        update();
     }
 
     void Camera::set_perspective(float fovY, float aspect, float nearZ, float farZ) {
@@ -41,51 +46,48 @@ namespace minecart::graphics {
         m_aspect = aspect;
         m_nearZ = nearZ;
         m_farZ = farZ;
-        m_projectionMatrix = minecart::maths::Mat4::perspective(fovY, aspect, nearZ, farZ);
+        m_projectionMatrix = glm::perspective(fovY, aspect, nearZ, farZ);
     }
 
     void Camera::set_aspect_ratio(float aspect) {
         m_aspect = aspect;
-        m_projectionMatrix = minecart::maths::Mat4::perspective(m_fovY, m_aspect, m_nearZ, m_farZ);
+        m_projectionMatrix = glm::perspective(m_fovY, m_aspect, m_nearZ, m_farZ);
     }
 
     void Camera::move_forward(float distance) {
-        m_position = m_position + m_forward * distance;
+        m_position += m_forward * distance;
+        update();
     }
 
     void Camera::move_right(float distance) {
-        m_position = m_position + m_right * distance;
+        m_position += m_right * distance;
+        update();
     }
 
     void Camera::move_up(float distance) {
-        m_position = m_position + minecart::maths::Vec3{0.0f, 1.0f, 0.0f} * distance;
+        m_position += WORLD_UP * distance;
+        update();
     }
 
     void Camera::rotate(float deltaPitch, float deltaYaw) {
         m_pitch = std::clamp(m_pitch + deltaPitch, -1.5533f, 1.5533f);
         m_yaw += deltaYaw;
-        update_vectors();
-    }
-
-    void Camera::update_vectors() {
-        // Calculate forward vector from pitch and yaw
-        m_forward.x = std::cos(m_pitch) * std::sin(m_yaw);
-        m_forward.y = std::sin(m_pitch);
-        m_forward.z = -std::cos(m_pitch) * std::cos(m_yaw);
-        m_forward = m_forward.normalized();
-
-        // Recalculate right and up vectors
-        m_right = minecart::maths::Vec3::cross(m_forward, WORLD_UP).normalized();
-        m_up = minecart::maths::Vec3::cross(m_right, m_forward).normalized();
+        update();
     }
 
     void Camera::update() {
-        // Update view matrix
-        minecart::maths::Vec3 target = m_position + m_forward;
-        m_viewMatrix = minecart::maths::Mat4::lookAt(m_position.data(), target.data(), WORLD_UP.data());
+        // Calculate forward vector from pitch and yaw
+        m_forward.x = std::sin(m_yaw) * std::cos(m_pitch);
+        m_forward.y = std::sin(m_pitch);
+        m_forward.z = -std::cos(m_yaw) * std::cos(m_pitch);
+        m_forward = glm::normalize(m_forward);
 
-        // Update projection matrix
-        m_projectionMatrix = minecart::maths::Mat4::perspective(m_fovY, m_aspect, m_nearZ, m_farZ);
+        // Recalculate right and up vectors
+        m_right = glm::normalize(glm::cross(m_forward, WORLD_UP));
+        m_up = glm::normalize(glm::cross(m_right, m_forward));
+
+        m_viewMatrix = glm::lookAt(m_position, m_position + m_forward, WORLD_UP);
+        // m_projectionMatrix is updated elsewhere
     }
 
 } // namespace minecart::graphics

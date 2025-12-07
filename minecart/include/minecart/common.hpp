@@ -6,7 +6,6 @@
 #include <memory>
 
 #include "minecart/camera.hpp"
-#include "minecart/maths.hpp"
 #include "minecart/model.hpp"
 #include "minecart/shader.hpp"
 #include "minecart/window.hpp"

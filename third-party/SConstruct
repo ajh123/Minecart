@@ -230,3 +230,56 @@ imgui_sources = [
 # Export for use in SConscript files
 env['IMGUI_INCLUDE'] = [imgui_include, imgui_backends]
 env['IMGUI_SOURCES'] = imgui_sources
+
+# ============================================================================
+# GLM Configuration
+# ============================================================================
+
+glm_dir = Dir('.').abspath + '/glm'
+glm_build_dir = os.path.join(glm_dir, 'build')
+glm_include = os.path.join(glm_dir)
+
+if is_windows:
+    glm_lib_dir = os.path.join(glm_build_dir, 'glm', build_type)
+    glm_lib_file = os.path.join(glm_lib_dir, 'glm.lib')
+else:
+    glm_lib_dir = glm_build_dir
+    glm_lib_file = os.path.join(glm_lib_dir, 'libglm.a')
+
+def build_glm():
+    """Build GLM using CMake if not already built."""
+    if os.path.exists(glm_lib_file):
+        print("GLM already built, skipping...")
+        return
+    
+    if not os.path.exists(os.path.join(glm_dir, 'CMakeLists.txt')):
+        print("ERROR: GLM not found! Run: git submodule update --init --recursive")
+        Exit(1)
+    
+    print("Setting up GLM with CMake...")
+    os.makedirs(glm_build_dir, exist_ok=True)
+    
+    cmake_configure = [
+        'cmake',
+        '-S', glm_dir,
+        '-B', glm_build_dir,
+        f'-DCMAKE_BUILD_TYPE={build_type}',
+        '-DGLM_TEST_ENABLE=OFF'
+    ]
+    
+    result = subprocess.run(cmake_configure, cwd=glm_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake configure failed for GLM")
+        Exit(1)
+    
+    cmake_build = ['cmake', '--build', glm_build_dir, '--config', build_type, '-j']
+    result = subprocess.run(cmake_build, cwd=glm_dir)
+    if result.returncode != 0:
+        print("ERROR: CMake build failed for GLM")
+        Exit(1)
+
+build_glm()
+
+env["GLM_INCLUDE"] = glm_include
+env["GLM_LIBPATH"] = glm_lib_dir
+env["GLM_LIBS"] = ['glm']

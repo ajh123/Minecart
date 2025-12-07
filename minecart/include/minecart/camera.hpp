@@ -5,7 +5,9 @@
 #include <array>
 #include <cmath>
 
-#include "minecart/maths.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace minecart::graphics {
 
@@ -23,9 +25,9 @@ namespace minecart::graphics {
         Camera& operator=(Camera&&) noexcept = default;
 
         // Position and orientation
-        void set_position(const  minecart::maths::Vec3& pos);
+        void set_position(const  glm::vec3& pos);
         void set_position(float x, float y, float z);
-        [[nodiscard]] const minecart::maths::Vec3& get_position() const noexcept { return m_position; }
+        [[nodiscard]] const glm::vec3& get_position() const noexcept { return m_position; }
 
         // Euler angles (in radians)
         void set_rotation(float pitch, float yaw);
@@ -33,7 +35,7 @@ namespace minecart::graphics {
         [[nodiscard]] float get_yaw() const noexcept { return m_yaw; }
 
         // Look at a target point
-        void look_at(const minecart::maths::Vec3& target);
+        void look_at(const glm::vec3& target);
 
         // Projection settings
         void set_perspective(float fovY, float aspect, float nearZ, float farZ);
@@ -51,32 +53,32 @@ namespace minecart::graphics {
         void update();
 
         // Get matrices
-        [[nodiscard]] const minecart::maths::Mat4& get_view_matrix() const noexcept { return m_viewMatrix; }
-        [[nodiscard]] const minecart::maths::Mat4& get_projection_matrix() const noexcept { return m_projectionMatrix; }
-        [[nodiscard]] minecart::maths::Mat4 get_view_projection() const { return m_projectionMatrix * m_viewMatrix; }
+        [[nodiscard]] const glm::mat4& get_view_matrix() const noexcept { return m_viewMatrix; }
+        [[nodiscard]] const glm::mat4& get_projection_matrix() const noexcept { return m_projectionMatrix; }
+        [[nodiscard]] glm::mat4 get_view_projection() const { return m_projectionMatrix * m_viewMatrix; }
 
         // Get the MVP matrix for a given model matrix
-        [[nodiscard]] minecart::maths::Mat4 get_mvp(const minecart::maths::Mat4& modelMatrix = minecart::maths::Mat4::identity()) const {
+        [[nodiscard]] glm::mat4 get_mvp(const glm::mat4& modelMatrix) const {
             return m_projectionMatrix * m_viewMatrix * modelMatrix;
         }
 
         // Direction vectors
-        [[nodiscard]] minecart::maths::Vec3 get_forward() const noexcept { return m_forward; }
-        [[nodiscard]] minecart::maths::Vec3 get_right() const noexcept { return m_right; }
-        [[nodiscard]] minecart::maths::Vec3 get_up() const noexcept { return m_up; }
+        [[nodiscard]] glm::vec3 get_forward() const noexcept { return m_forward; }
+        [[nodiscard]] glm::vec3 get_right() const noexcept { return m_right; }
+        [[nodiscard]] glm::vec3 get_up() const noexcept { return m_up; }
 
     private:
         void update_vectors();
 
-        minecart::maths::Vec3 m_position{0.0f, 0.0f, 3.0f};
+        glm::vec3 m_position{0.0f, 0.0f, 3.0f};
         float m_pitch{0.0f};  // Up/down rotation
         float m_yaw{-1.5708f};   // Left/right rotation (start looking at -Z)
 
-        minecart::maths::Vec3 m_forward{0.0f, 0.0f, -1.0f};
-        minecart::maths::Vec3 m_right{1.0f, 0.0f, 0.0f};
-        minecart::maths::Vec3 m_up{0.0f, 1.0f, 0.0f};
+        glm::vec3 m_forward{0.0f, 0.0f, -1.0f};
+        glm::vec3 m_right{1.0f, 0.0f, 0.0f};
+        glm::vec3 m_up{0.0f, 1.0f, 0.0f};
 
-        static constexpr minecart::maths::Vec3 WORLD_UP{0.0f, 1.0f, 0.0f};
+        static constexpr glm::vec3 WORLD_UP{0.0f, 1.0f, 0.0f};
 
         // Projection parameters
         float m_fovY{1.0472f};     // 60 degrees in radians
@@ -85,8 +87,8 @@ namespace minecart::graphics {
         float m_farZ{1000.0f};
 
         // Cached matrices
-        minecart::maths::Mat4 m_viewMatrix;
-        minecart::maths::Mat4 m_projectionMatrix;
+        glm::mat4 m_viewMatrix;
+        glm::mat4 m_projectionMatrix;
     };
 
 } // namespace minecart::graphics

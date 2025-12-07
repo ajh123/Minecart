@@ -148,6 +148,7 @@ namespace minecart::graphics {
     }
 
     void Shader::set_fragment_uniform_raw(SDL_GPUCommandBuffer* commandBuffer, uint32_t slot, const void* data, uint32_t size) {
+        spdlog::info("Shader::set_fragment_uniform_raw: pushing {} bytes to slot {}", size, slot);
         SDL_PushGPUFragmentUniformData(commandBuffer, slot, data, size);
     }
 

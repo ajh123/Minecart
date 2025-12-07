@@ -26,6 +26,11 @@ shared_env.Append(CPPPATH=[env['SHADERCROSS_INCLUDE']])
 shared_env.Append(LIBPATH=[env['SHADERCROSS_LIBPATH']])
 shared_env.Append(LIBS=env['SHADERCROSS_LIBS'])
 
+# Add GLM configuration
+shared_env.Append(CPPPATH=[env['GLM_INCLUDE']])
+shared_env.Append(LIBPATH=[env['GLM_LIBPATH']])
+shared_env.Append(LIBS=env['GLM_LIBS'])
+
 # Gather source files
 sources = Glob('src/*.cpp')
 

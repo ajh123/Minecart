@@ -45,7 +45,7 @@ namespace minecart::graphics {
         // Create the GPU device
         SDL_GPUDevice* rawDevice = SDL_CreateGPUDevice(
             SDL_GPU_SHADERFORMAT_SPIRV, 
-            false, 
+            true,  // enable debug mode to get GPU validation and helpful diagnostics
             nullptr
         );
         
